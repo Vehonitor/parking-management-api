@@ -37,3 +37,10 @@ openai==1.3.5
 
 # PostgreSQL Driver - ADD THIS
 psycopg2-binary==2.9.9
+
+# Twilio for SMS OTP
+twilio==8.10.0
+
+# Optional
+razorpay==1.4.1
+boto3==1.29.7

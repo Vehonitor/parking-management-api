@@ -1,136 +1,130 @@
-from typing import Optional
-from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
-from repositories.user_repo import UserRepository
-from src.api.v1.schemas.user import UserCreate, UserLogin, Token
-from src.core.security import verify_password, create_access_token
-from src.db.models.user import User
-from src.utils.logger import logger
 
+
+# ============================================================================
+# STEP 11: Create src/services/auth_service.py (New)
+# ============================================================================
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+from src.db.models.user import User
+from src.db.models.otp import OTP
+from src.repositories.user_repo import UserRepository
+from src.repositories.otp_repo import OTPRepository
+from src.core.security import Security
+from src.utils.twilio_client import TwilioClient
+from src.core.config import settings
+from datetime import datetime, timedelta
+import random
+import string
+import logging
+
+logger = logging.getLogger(__name__)
 
 class AuthService:
-    """Service for authentication and authorization."""
-    
     def __init__(self, db: Session):
         self.db = db
         self.user_repo = UserRepository(db)
-    
-    def register_user(self, user_data: UserCreate) -> User:
-        """
-        Register a new user.
-        
-        Args:
-            user_data: User registration data
+        self.otp_repo = OTPRepository(db)
+        self.twilio_client = TwilioClient()
+
+    def generate_otp(self) -> str:
+        """Generate random OTP"""
+        return ''.join(random.choices(string.digits, k=settings.OTP_LENGTH))
+
+    async def send_otp(self, phone: str) -> dict:
+        """Send OTP to phone number"""
+        try:
+            # Check if user exists, if not create
+            user = self.user_repo.get_by_phone(phone)
+            if not user:
+                user = User(phone=phone)
+                user = self.user_repo.create(user)
+                logger.info(f"New user created with phone: {phone}")
             
-        Returns:
-            Created user
+            # Invalidate old OTPs
+            self.otp_repo.invalidate_phone_otps(phone)
             
-        Raises:
-            HTTPException: If email or username already exists
-        """
-        # Check if email already exists
-        existing_user = self.user_repo.get_by_email(user_data.email)
-        if existing_user:
-            logger.warning(f"Registration attempt with existing email: {user_data.email}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
-            )
-        
-        # Check if username already exists
-        existing_user = self.user_repo.get_by_username(user_data.username)
-        if existing_user:
-            logger.warning(f"Registration attempt with existing username: {user_data.username}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username already taken"
-            )
-        
-        # Create new user
-        user = self.user_repo.create(user_data)
-        logger.info(f"New user registered: {user.username} ({user.email})")
-        return user
-    
-    def login(self, login_data: UserLogin) -> Token:
-        """
-        Authenticate user and generate access token.
-        
-        Args:
-            login_data: Login credentials
+            # Generate new OTP
+            otp_code = self.generate_otp()
+            expiry_time = datetime.utcnow() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
             
-        Returns:
-            Access token
+            # Save OTP to database
+            otp = OTP(
+                phone=phone,
+                otp_code=otp_code,
+                expiry_time=expiry_time
+            )
+            self.otp_repo.create(otp)
             
-        Raises:
-            HTTPException: If credentials are invalid
-        """
-        # Get user by username
-        user = self.user_repo.get_by_username(login_data.username)
-        if not user:
-            logger.warning(f"Login attempt with non-existent username: {login_data.username}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password"
-            )
-        
-        # Verify password
-        if not verify_password(login_data.password, user.hashed_password):
-            logger.warning(f"Failed login attempt for user: {login_data.username}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password"
-            )
-        
-        # Check if user is active
-        if not user.is_active:
-            logger.warning(f"Login attempt by inactive user: {login_data.username}")
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User account is inactive"
-            )
-        
-        # Update last login
-        self.user_repo.update_last_login(user.id)
-        
-        # Create access token
-        access_token = create_access_token(
-            data={"sub": user.id, "username": user.username, "role": user.role.value}
-        )
-        
-        logger.info(f"User logged in: {user.username}")
-        return Token(access_token=access_token)
-    
-    def get_current_user(self, token_payload: dict) -> User:
-        """
-        Get current user from token payload.
-        
-        Args:
-            token_payload: Decoded JWT token payload
+            # Send OTP via Twilio
+            result = self.twilio_client.send_otp(phone, otp_code)
             
-        Returns:
-            Current user
+            if not result.get('success'):
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to send OTP: {result.get('error', 'Unknown error')}"
+                )
             
-        Raises:
-            HTTPException: If user not found or inactive
-        """
-        user_id = token_payload.get("sub")
-        if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token"
-            )
+            return {
+                "message": "OTP sent successfully",
+                "phone": phone,
+                "expires_in_minutes": settings.OTP_EXPIRY_MINUTES,
+                # Only include OTP in development mode
+                "otp": otp_code if settings.DEBUG else None
+            }
         
-        user = self.user_repo.get_by_id(user_id)
-        if not user:
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error sending OTP: {str(e)}")
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to send OTP: {str(e)}"
             )
+
+    async def verify_otp(self, phone: str, otp_code: str) -> dict:
+        """Verify OTP and login user"""
+        try:
+            # Check if OTP is valid
+            otp = self.otp_repo.get_latest_valid(phone, otp_code)
+            
+            if not otp:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid or expired OTP"
+                )
+            
+            # Mark OTP as used
+            self.otp_repo.mark_as_used(otp.id)
+            
+            # Get or create user
+            user = self.user_repo.get_by_phone(phone)
+            if not user:
+                user = User(phone=phone, phone_verified=True)
+                user = self.user_repo.create(user)
+            else:
+                # Mark phone as verified
+                self.user_repo.verify_phone(phone)
+                user = self.user_repo.get_by_phone(phone)
+            
+            # Generate JWT token
+            access_token = Security.create_access_token(
+                data={"sub": phone, "user_id": user.id}
+            )
+            
+            logger.info(f"User logged in: {phone}")
+            
+            return {
+                "access_token": access_token,
+                "token_type": "bearer",
+                "user": user
+            }
         
-        if not user.is_active:
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error verifying OTP: {str(e)}")
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User account is inactive"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to verify OTP: {str(e)}"
             )
-        
-        return user
+

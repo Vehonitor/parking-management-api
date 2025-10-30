@@ -1,78 +1,45 @@
-from sqlalchemy.orm import Session
-from typing import Optional
-from datetime import datetime
-from src.db.models.user import User, UserRole
-from src.api.v1.schemas.user import UserCreate, UserUpdate
-from src.core.security import get_password_hash
 
+# ============================================================================
+# STEP 9: Update src/repositories/user_repo.py
+# ============================================================================
+from sqlalchemy.orm import Session
+from src.db.models.user import User
+from typing import Optional
 
 class UserRepository:
-    """Repository for user database operations."""
-    
     def __init__(self, db: Session):
         self.db = db
-    
-    def get_by_id(self, user_id: str) -> Optional[User]:
-        """Get user by ID."""
-        return self.db.query(User).filter(User.id == user_id).first()
-    
-    def get_by_email(self, email: str) -> Optional[User]:
-        """Get user by email."""
-        return self.db.query(User).filter(User.email == email).first()
-    
-    def get_by_username(self, username: str) -> Optional[User]:
-        """Get user by username."""
-        return self.db.query(User).filter(User.username == username).first()
-    
-    def create(self, user_data: UserCreate, role: UserRole = UserRole.USER) -> User:
-        """Create a new user."""
-        db_user = User(
-            email=user_data.email,
-            username=user_data.username,
-            hashed_password=get_password_hash(user_data.password),
-            full_name=user_data.full_name,
-            phone_number=user_data.phone_number,
-            role=role
-        )
-        self.db.add(db_user)
-        self.db.commit()
-        self.db.refresh(db_user)
-        return db_user
-    
-    def update(self, user_id: str, user_data: UserUpdate) -> Optional[User]:
-        """Update user information."""
-        user = self.get_by_id(user_id)
-        if not user:
-            return None
-        
-        update_data = user_data.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(user, field, value)
-        
-        user.updated_at = datetime.utcnow()
+
+    def create(self, user: User) -> User:
+        self.db.add(user)
         self.db.commit()
         self.db.refresh(user)
         return user
-    
-    def update_last_login(self, user_id: str) -> Optional[User]:
-        """Update user's last login timestamp."""
+
+    def get_by_id(self, user_id: int) -> Optional[User]:
+        return self.db.query(User).filter(User.id == user_id).first()
+
+    def get_by_phone(self, phone: str) -> Optional[User]:
+        return self.db.query(User).filter(User.phone == phone).first()
+
+    def get_by_email(self, email: str) -> Optional[User]:
+        return self.db.query(User).filter(User.email == email).first()
+
+    def update(self, user_id: int, update_data: dict) -> Optional[User]:
         user = self.get_by_id(user_id)
         if user:
-            user.last_login = datetime.utcnow()
+            for key, value in update_data.items():
+                if value is not None:
+                    setattr(user, key, value)
             self.db.commit()
             self.db.refresh(user)
         return user
-    
-    def delete(self, user_id: str) -> bool:
-        """Delete a user."""
-        user = self.get_by_id(user_id)
-        if not user:
-            return False
-        
-        self.db.delete(user)
-        self.db.commit()
-        return True
-    
-    def get_all(self, skip: int = 0, limit: int = 100):
-        """Get all users with pagination."""
-        return self.db.query(User).offset(skip).limit(limit).all()
+
+    def verify_phone(self, phone: str) -> Optional[User]:
+        user = self.get_by_phone(phone)
+        if user:
+            user.phone_verified = True
+            self.db.commit()
+            self.db.refresh(user)
+        return user
+

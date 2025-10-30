@@ -1,33 +1,47 @@
 
 # ============================================================================
-# FILE: src/api/v1/schemas/user.py
+# STEP 8: Update src/api/v1/schemas/user.py
 # ============================================================================
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field, validator
 from typing import Optional
-from datetime import datetime
+import re
 
-class UserBase(BaseModel):
-    full_name: str = Field(..., min_length=1, max_length=100)
+class PhoneNumberRequest(BaseModel):
     phone: str = Field(..., min_length=10, max_length=15)
-    email: EmailStr
-    address: Optional[str] = None
+    
+    @validator('phone')
+    def validate_phone(cls, v):
+        # Remove spaces, dashes, and parentheses
+        phone = re.sub(r'[\s\-\(\)]', '', v)
+        
+        # Check if it's a valid phone number (basic validation)
+        if not re.match(r'^\+?[1-9]\d{9,14}$', phone):
+            raise ValueError('Invalid phone number format')
+        
+        return phone
 
-class UserCreate(UserBase):
-    password: str = Field(..., min_length=8)
+class OTPVerifyRequest(BaseModel):
+    phone: str = Field(..., min_length=10, max_length=15)
+    otp_code: str = Field(..., min_length=4, max_length=6)
 
-class UserUpdate(BaseModel):
-    full_name: Optional[str] = Field(None, max_length=100)
-    phone: Optional[str] = Field(None, max_length=15)
-    address: Optional[str] = None
-
-class UserResponse(UserBase):
-    user_id: int
+class UserResponse(BaseModel):
+    id: int
+    phone: str
+    full_name: Optional[str] = None
+    email: Optional[str] = None
     is_active: bool
-    email_verified: bool
+    phone_verified: bool
 
     class Config:
         from_attributes = True
 
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
