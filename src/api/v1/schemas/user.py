@@ -40,6 +40,11 @@ class UserUpdate(BaseModel):
     email: Optional[str] = None
     address: Optional[str] = None
 
+class UserAdded(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    user_id: Optional[str] = None
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"

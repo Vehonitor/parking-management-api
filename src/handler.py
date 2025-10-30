@@ -1,3 +1,6 @@
+from fastapi import APIRouter, FastAPI
+
+
 API_PREFIX = "/openai-summary"
 
 app = FastAPI(
@@ -13,7 +16,7 @@ router = APIRouter()
 
 @router.get("/")
 async def root():
-    return {"message": "Welcome", "stage": STAGE}
+    return {"message": "Welcome", "stage": "preprod"}
 
 @router.get("/health")
 async def health():
