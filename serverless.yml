@@ -6,7 +6,7 @@ variablesResolutionMode: 20210326
 provider:
   name: aws
   runtime: python3.10
-  stage: ${opt:stage, 'dev'}
+  stage: ${opt:stage, 'pre-prod'}
   region: us-east-1
   timeout: 30
   memorySize: 512
@@ -71,6 +71,12 @@ custom:
       enabled: false
       timeout: 10
       memorySize: 128
+
+  customDomain:
+    domainName: api${file(./env/${self:provider.stage}.json):API_PREFIX}.parkidam.com
+    basePath: "v3"
+    stage: ${self:provider.stage}
+    createRoute53Record: true
 
 
 package:
