@@ -1,43 +1,96 @@
-service: parking-management-api
+service: 'parking-management-api'
+
+frameworkVersion: "3"
+variablesResolutionMode: 20210326
+
 provider:
   name: aws
   runtime: python3.10
-  memorySize: 512
+  stage: ${opt:stage, 'preprod'}
+  region: us-east-1
   timeout: 30
+  memorySize: 512
+
   environment:
-    GOOGLE_MAPS_API_KEY: 
-    RAZORPAY_KEY_ID: 
-    RAZORPAY_KEY_SECRET: 
-    DYNAMODB_TABLE_USER: 
-    DYNAMODB_TABLE_PARKING: 
-    DYNAMODB_TABLE_BOOKING: 
-    S3_BUCKET: 
-    JWT_SECRET: 
+    # TWILIO_ACCOUNT_SID: ${ssm:/${self:provider.stage}/twilio/account_sid}
+    # TWILIO_AUTH_TOKEN: ${ssm:/${self:provider.stage}/twilio/auth_token}
+    # OPENAI_API_KEY: ${ssm:/${self:provider.stage}/openai/api_key}
+    S3_BUCKET: "https://content-preprod-parkidem/"
+    STAGE: "preprod"
+
   iamRoleStatements:
-    - Effect: Allow
+    - Effect: "Allow"
       Action:
-        - lambda:InvokeFunction
-        - dynamodb:PutItem
-        - dynamodb:GetItem
-        - dynamodb:UpdateItem
-        - dynamodb:DeleteItem
-        - s3:PutObject
-        - s3:GetObject
+        - "s3:GetObject"
+        - "s3:ListBucket"
+      Resource: "*"  # temporary, replace with your bucket ARN later
+    - Effect: "Allow"
+      Action:
+        - "logs:CreateLogGroup"
+        - "logs:CreateLogStream"
+        - "logs:PutLogEvents"
       Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "lambda:InvokeFunction"
+      Resource: "*"
+
+
 functions:
   api:
-    handler: handler.lambda_handler
+    handler: handler.handler
     events:
       - http:
-          path: api/v1/{proxy+}
-          method: any
+          path: /openapi.json
+          method: GET
+          cors: true
+      - http:
+          path: /
+          method: ANY
+          cors: true
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
+
 plugins:
   - serverless-python-requirements
   - serverless-offline
-  - serverless-domain-manager
   - serverless-plugin-warmup
+  - serverless-domain-manager
+
 custom:
-  customDomain:
-    domainName: api-parking.com
-    certificateName: your-certificate-name
-    stage: prod
+  pythonRequirements:
+    dockerizePip: false
+    slim: true
+    zip: true  
+    layer: true
+
+  warmup:
+    default:
+      enabled: false
+
+  # warmup:
+  #   default:
+  #     enabled: false
+  #     timeout: 10
+  #     memorySize: 128
+
+  # customDomain:
+  #   domainName: api${file(./env/${self:provider.stage}.json):API_PREFIX}.parkidam.com
+  #   basePath: "v3"
+  #   stage: ${self:provider.stage}
+  #   createRoute53Record: true
+
+
+package:
+  patterns:
+    - '!venv/**'
+    - '!node_modules/**'
+    - '!__pycache__/**'
+    - '!tests/**'
+    - '!*.test.py'
+    - '**/*.py'
+    - 'services/**'
+    - 'utils/**'
+    - 'static/**'

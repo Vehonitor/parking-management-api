@@ -1,0 +1,35 @@
+{
+  "name": "appointment-summary-api",
+  "version": "1.0.0",
+  "description": "Serverless Appointment Summary API",
+  "scripts": {
+    "deploy": "serverless deploy --stage pre-prod",
+    "offline": "serverless offline",
+    "warmup": "serverless plugin warmup",
+    "lint": "eslint .",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "serverless": "^3.40.0",
+    "serverless-aws-alias": "1.8.0",
+    "serverless-domain-manager": "^7.4.0",
+    "serverless-offline": "^14.4.0",
+    "serverless-plugin-optimize": "4.1.0-rc.1",
+    "serverless-plugin-warmup": "^8.3.0",
+    "serverless-pseudo-parameters": "^2.6.1",
+    "serverless-python-requirements": "^6.1.2",
+    "serverless-webpack": "^5.15.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "keywords": [
+    "serverless",
+    "aws",
+    "lambda",
+    "python",
+    "api"
+  ],
+  "author": "Vinothkumar S",
+  "license": "MIT"
+}
