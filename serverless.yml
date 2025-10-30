@@ -12,11 +12,11 @@ provider:
   memorySize: 512
 
   environment:
-    TWILIO_ACCOUNT_SID: ${ssm:/${self:provider.stage}/twilio/account_sid}
-    TWILIO_AUTH_TOKEN: ${ssm:/${self:provider.stage}/twilio/auth_token}
-    OPENAI_API_KEY: ${ssm:/${self:provider.stage}/openai/api_key}
-    S3_BUCKET: ${ssm:/${self:provider.stage}/openai/s3_bucket}
-    STAGE: ${self:provider.stage}
+    # TWILIO_ACCOUNT_SID: ${ssm:/${self:provider.stage}/twilio/account_sid}
+    # TWILIO_AUTH_TOKEN: ${ssm:/${self:provider.stage}/twilio/auth_token}
+    # OPENAI_API_KEY: ${ssm:/${self:provider.stage}/openai/api_key}
+    S3_BUCKET: "https://content-preprod-parkidem/"
+    STAGE: "pre-prod"
 
   iamRoleStatements:
     - Effect: "Allow"
