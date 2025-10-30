@@ -25,7 +25,7 @@ class OTPVerifyRequest(BaseModel):
     otp_code: str = Field(..., min_length=4, max_length=6)
 
 class UserResponse(BaseModel):
-    id: int
+    user_id: int
     phone: str
     full_name: Optional[str] = None
     email: Optional[str] = None

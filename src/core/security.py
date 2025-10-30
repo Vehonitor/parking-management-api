@@ -33,8 +33,10 @@ class Security:
         else:
             expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         
+        print(f"Creating access token with expiry: {expire}")  # For debugging purposes
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+        print(f"Encoded JWT: {encoded_jwt}")  # For debugging purposes
         return encoded_jwt
 
     @staticmethod

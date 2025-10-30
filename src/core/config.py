@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     TWILIO_FROM_NUMBER: str
     
     # OTP Settings
-    OTP_EXPIRY_MINUTES: int = 10
+    OTP_EXPIRY_MINUTES: int = 100
     OTP_LENGTH: int = 6
     
     # # API Keys
