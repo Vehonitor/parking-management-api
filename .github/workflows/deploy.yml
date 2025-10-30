@@ -71,7 +71,7 @@ jobs:
               ;;
             pre-prod)
               echo "Deploying to pre-production"
-              sls deploy --stage preprod --offline false --verbose
+              sls deploy --stage preprod --verbose
               ;;
             
             *)
