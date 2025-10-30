@@ -3,6 +3,7 @@
 # FILE: src/db/models/booking.py
 # ============================================================================
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, DECIMAL, Text
+from .parking_profile import BookingTypeEnum
 from src.db.base import Base
 from datetime import datetime
 import enum
