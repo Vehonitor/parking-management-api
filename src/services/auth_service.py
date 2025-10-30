@@ -5,6 +5,7 @@
 # ============================================================================
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+from src.api.v1.schemas.user import TokenResponse, UserResponse
 from src.db.models.user import User
 from src.db.models.otp import OTP
 from src.repositories.user_repo import UserRepository
@@ -34,18 +35,20 @@ class AuthService:
         """Send OTP to phone number"""
         try:
             # Check if user exists, if not create
-            user = self.user_repo.get_by_phone(phone)
-            if not user:
-                user = User(phone=phone)
-                user = self.user_repo.create(user)
-                logger.info(f"New user created with phone: {phone}")
+            # user = self.user_repo.get_by_phone(phone)
+            # if not user:
+            #     user = User(phone=phone)
+            #     user = self.user_repo.create(user)
+            #     logger.info(f"New user created with phone: {phone}")
             
             # Invalidate old OTPs
-            self.otp_repo.invalidate_phone_otps(phone)
+            # self.otp_repo.invalidate_phone_otps(phone)
             
             # Generate new OTP
             otp_code = self.generate_otp()
+            print(f"Generated OTP for {phone}: {otp_code}")  # For debugging purposes
             expiry_time = datetime.utcnow() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
+            print(f"OTP expiry time: {expiry_time}")  # For debugging purposes
             
             # Save OTP to database
             otp = OTP(
@@ -53,11 +56,12 @@ class AuthService:
                 otp_code=otp_code,
                 expiry_time=expiry_time
             )
+            print(f"Saving OTP to DB for {phone}")  # For debugging purposes
             self.otp_repo.create(otp)
-            
+            print(f"OTP saved to DB for {phone}")  # For debugging purposes
             # Send OTP via Twilio
             result = self.twilio_client.send_otp(phone, otp_code)
-            
+            print(f"Twilio send result for {phone}: {result}")  # For debugging purposes
             if not result.get('success'):
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -86,18 +90,19 @@ class AuthService:
         try:
             # Check if OTP is valid
             otp = self.otp_repo.get_latest_valid(phone, otp_code)
-            
+            print(f"Verifying OTP for {phone}: found OTP: {otp}")  # For debugging purposes
             if not otp:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Invalid or expired OTP"
                 )
-            
+            print(f"OTP is valid for {otp.otp_id}")  # For debugging purposes
             # Mark OTP as used
-            self.otp_repo.mark_as_used(otp.id)
+            self.otp_repo.mark_as_used(otp.otp_id)
             
             # Get or create user
             user = self.user_repo.get_by_phone(phone)
+            print(f"User fetched for {phone}: {user}")  # For debugging purposes
             if not user:
                 user = User(phone=phone, phone_verified=True)
                 user = self.user_repo.create(user)
@@ -105,19 +110,28 @@ class AuthService:
                 # Mark phone as verified
                 self.user_repo.verify_phone(phone)
                 user = self.user_repo.get_by_phone(phone)
-            
+            print(f"User after verification for {phone}: {user}")  # For debugging purposes
             # Generate JWT token
             access_token = Security.create_access_token(
-                data={"sub": phone, "user_id": user.id}
+                data={"sub": phone, "user_id": user.user_id}
             )
+            print(f"Access token generated for {phone}: {access_token}")  # For debugging purposes
+            print(f"User logged in: {user}")  # For debugging purposes
             
-            logger.info(f"User logged in: {phone}")
+            # logger.info(f"User logged in: {phone}")
             
-            return {
-                "access_token": access_token,
-                "token_type": "bearer",
-                "user": user
-            }
+            return TokenResponse(
+                access_token=access_token,
+                token_type="bearer",
+                user=UserResponse(
+                    user_id=user.user_id,
+                    phone=user.phone,
+                    full_name=user.full_name,
+                    email=user.email,
+                    is_active=user.is_active,
+                    phone_verified=user.phone_verified
+                )
+            )
         
         except HTTPException:
             raise
