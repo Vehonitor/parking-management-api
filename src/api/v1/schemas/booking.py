@@ -7,7 +7,8 @@ from typing import Optional
 from datetime import datetime
 from decimal import Decimal
 from src.db.models.booking import BookingStatusEnum, RefundStatusEnum
-from src.db.models.parking_profile import BookingTypeEnum
+# from src.db.models.parking_profile import BookingTypeEnum
+from .parking_profile import BookingTypeEnum
 
 class BookingBase(BaseModel):
     vehicle_id: int
