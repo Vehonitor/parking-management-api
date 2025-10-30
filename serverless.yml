@@ -58,6 +58,7 @@ plugins:
   - serverless-python-requirements
   - serverless-offline
   - serverless-plugin-warmup
+  - serverless-domain-manager
 
 custom:
   pythonRequirements:
