@@ -1,11 +1,10 @@
-# File: /parking-management-api/parking-management-api/src/api/v1/__init__.py
-
 from fastapi import APIRouter
+from src.api.v1.routers import parking
 
-router = APIRouter()
+# Create main API router
+api_router = APIRouter(prefix="/api/v1")
 
-from .routers import auth, parking, health
-
-router.include_router(auth.router, prefix="/auth", tags=["auth"])
-router.include_router(parking.router, prefix="/parking", tags=["parking"])
-router.include_router(health.router, prefix="/health", tags=["health"])
+# Include all routers
+# api_router.include_router(health.router)
+# api_router.include_router(auth.router)
+api_router.include_router(parking.router)
