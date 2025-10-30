@@ -34,11 +34,9 @@ provider:
       Action:
         - "lambda:InvokeFunction"
       Resource: "*"
-
-
 functions:
   api:
-    handler: handler.handler
+    handler: src.handler.handler
     events:
       - http:
           path: /openapi.json
@@ -53,6 +51,23 @@ functions:
           method: ANY
           cors: true
 
+# functions:
+#   api:
+#     handler: src/handler.handler
+#     events:
+#       - http:
+#           path: /openapi.json
+#           method: GET
+#           cors: true
+#       - http:
+#           path: /
+#           method: ANY
+#           cors: true
+#       - http:
+#           path: /{proxy+}
+#           method: ANY
+#           cors: true
+
 plugins:
   - serverless-python-requirements
   - serverless-offline
@@ -66,7 +81,7 @@ plugins:
 #     layer: true
 custom:
   pythonRequirements:
-    pythonBin: py
+    pythonBin: python
     dockerizePip: false
     slim: true
     zip: true
@@ -98,6 +113,7 @@ package:
     - '!node_modules/**'
     - '!__pycache__/**'
     - '!tests/**'
+    - 'src/**'   
     - '!*.test.py'
     - '**/*.py'
     - 'services/**'
