@@ -1,20 +1,33 @@
-from pydantic import BaseModel, EmailStr
+
+# ============================================================================
+# FILE: src/api/v1/schemas/user.py
+# ============================================================================
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
+from datetime import datetime
 
-class UserCreate(BaseModel):
-    username: str
+class UserBase(BaseModel):
+    full_name: str = Field(..., min_length=1, max_length=100)
+    phone: str = Field(..., min_length=10, max_length=15)
     email: EmailStr
-    password: str
+    address: Optional[str] = None
 
-class UserRead(BaseModel):
-    id: int
-    username: str
-    email: EmailStr
-
-    class Config:
-        orm_mode = True
+class UserCreate(UserBase):
+    password: str = Field(..., min_length=8)
 
 class UserUpdate(BaseModel):
-    username: Optional[str] = None
-    email: Optional[EmailStr] = None
-    password: Optional[str] = None
+    full_name: Optional[str] = Field(None, max_length=100)
+    phone: Optional[str] = Field(None, max_length=15)
+    address: Optional[str] = None
+
+class UserResponse(UserBase):
+    user_id: int
+    is_active: bool
+    email_verified: bool
+
+    class Config:
+        from_attributes = True
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str

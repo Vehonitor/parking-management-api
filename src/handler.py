@@ -1,11 +1,22 @@
-from fastapi import FastAPI
-from mangum import Mangum
-from api.v1.routers import auth, parking, health
+API_PREFIX = "/openai-summary"
 
-app = FastAPI()
+app = FastAPI(
+    title="Appointment Summary API",
+    description="API to summarize appointments using OpenAI and Twilio",
+    version="1.0.0",
+    docs_url=f"{API_PREFIX}/docs",       # Swagger UI
+    redoc_url=f"{API_PREFIX}/redoc",     # ReDoc UI
+    openapi_url=f"{API_PREFIX}/openapi.json"
+)
 
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
-app.include_router(parking.router, prefix="/api/v1/parking", tags=["parking"])
-app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
+router = APIRouter()
 
-handler = Mangum(app)
+@router.get("/")
+async def root():
+    return {"message": "Welcome", "stage": STAGE}
+
+@router.get("/health")
+async def health():
+    return {"status": "ok"}
+
+app.include_router(router, prefix=API_PREFIX)
