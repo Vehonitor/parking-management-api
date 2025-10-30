@@ -72,11 +72,11 @@ custom:
       timeout: 10
       memorySize: 128
 
-  customDomain:
-    domainName: api${file(./env/${self:provider.stage}.json):API_PREFIX}.parkidam.com
-    basePath: "v3"
-    stage: ${self:provider.stage}
-    createRoute53Record: true
+  # customDomain:
+  #   domainName: api${file(./env/${self:provider.stage}.json):API_PREFIX}.parkidam.com
+  #   basePath: "v3"
+  #   stage: ${self:provider.stage}
+  #   createRoute53Record: true
 
 
 package:
