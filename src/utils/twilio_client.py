@@ -2,20 +2,23 @@
 # ============================================================================
 # STEP 7: Create src/utils/twilio_client.py
 # ============================================================================
+import os
 from twilio.rest import Client
 from src.core.config import settings
 from typing import Optional
 import logging
-
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
+TWILIO_FROM_NUMBER = os.environ.get("TWILIO_FROM_NUMBER")
 logger = logging.getLogger(__name__)
 
 class TwilioClient:
     def __init__(self):
         self.client = Client(
-            settings.TWILIO_ACCOUNT_SID,
-            settings.TWILIO_AUTH_TOKEN
+            TWILIO_ACCOUNT_SID,
+           TWILIO_AUTH_TOKEN
         )
-        self.from_number = settings.TWILIO_FROM_NUMBER
+        self.from_number = TWILIO_FROM_NUMBER
     
     def send_sms(self, to_number: str, message: str) -> dict:
         """Send SMS using Twilio"""
