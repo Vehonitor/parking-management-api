@@ -34,3 +34,6 @@ pytest-cov==4.1.0
 # Optional: Third-party services
 # twilio==8.10.0
 openai==1.3.5
+
+# PostgreSQL Driver - ADD THIS
+psycopg2-binary==2.9.9

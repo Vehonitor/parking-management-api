@@ -1,29 +1,27 @@
 
-
 # ============================================================================
-# FILE: src/api/v1/schemas/vehicle.py
+# FILE: src/db/models/vehicle.py
 # ============================================================================
-from pydantic import BaseModel, Field
-from typing import Optional
-from src.db.models.vehicle import VehicleTypeEnum
+from sqlalchemy import Column, Integer, String, ForeignKey, Enum
+from src.db.base import Base
+import enum
 
-class VehicleBase(BaseModel):
-    nick_name: Optional[str] = Field(None, max_length=100)
-    vehicle_type: VehicleTypeEnum
-    model: Optional[str] = Field(None, max_length=50)
-    registration_no: str = Field(..., max_length=20)
+class VehicleTypeEnum(str, enum.Enum):
+    BIKE = "Bike"
+    CAR = "Car"
+    SEDAN = "Sedan"
+    SUV = "SUV"
 
-class VehicleCreate(VehicleBase):
-    pass
+class Vehicle(Base):
+    __tablename__ = 'vehicles'
 
-class VehicleUpdate(BaseModel):
-    nick_name: Optional[str] = None
-    vehicle_type: Optional[VehicleTypeEnum] = None
-    model: Optional[str] = None
+    vehicle_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)
+    nick_name = Column(String(100), nullable=True)
+    vehicle_type = Column(Enum(VehicleTypeEnum), nullable=False)
+    model = Column(String(50), nullable=True)
+    registration_no = Column(String(20), unique=True, nullable=False)
 
-class VehicleResponse(VehicleBase):
-    vehicle_id: int
-    user_id: int
+    def __repr__(self):
+        return f"<Vehicle(vehicle_id={self.vehicle_id}, registration_no='{self.registration_no}')>"
 
-    class Config:
-        from_attributes = True
