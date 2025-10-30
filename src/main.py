@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from src.api.v1.routers import auth
 # from src.api.v1.routers import (
 #     auth, users, vehicles, parking_zones, parking_profiles,
 #     schedules, bookings, checkinout, payments, chat, health
@@ -21,6 +22,9 @@ app.add_middleware(
 )
 
 # Include routers
+# Include routers
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+
 # app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 # app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 # app.include_router(vehicles.router, prefix="/api/v1/vehicles", tags=["Vehicles"])

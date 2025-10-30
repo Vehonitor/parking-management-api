@@ -21,6 +21,15 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
+    # Twilio
+    TWILIO_ACCOUNT_SID: str
+    TWILIO_AUTH_TOKEN: str
+    TWILIO_FROM_NUMBER: str
+    
+    # OTP Settings
+    OTP_EXPIRY_MINUTES: int = 10
+    OTP_LENGTH: int = 6
+    
     # # API Keys
     # GOOGLE_MAPS_API_KEY: Optional[str] = None
     # RAZORPAY_KEY_ID: Optional[str] = None

@@ -1,115 +1,37 @@
-from typing import Generator
+
+
+# ============================================================================
+# STEP 13: Update src/api/v1/dependencies.py
+# ============================================================================
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from src.db.session import get_db
-from src.core.security import decode_access_token
-from src.services.auth_service import AuthService
-from src.db.models.user import User, UserRole
-
-# Security scheme
-security = HTTPBearer()
-
+from src.core.security import get_current_user_phone
+from src.db.models.user import User
+from src.repositories.user_repo import UserRepository
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    phone: str = Depends(get_current_user_phone),
     db: Session = Depends(get_db)
 ) -> User:
-    """
-    Dependency to get current authenticated user.
+    """Get current user from database"""
+    user_repo = UserRepository(db)
+    user = user_repo.get_by_phone(phone)
     
-    Args:
-        credentials: HTTP bearer credentials
-        db: Database session
-        
-    Returns:
-        Current user
-        
-    Raises:
-        HTTPException: If authentication fails
-    """
-    token = credentials.credentials
-    
-    # Decode token
-    payload = decode_access_token(token)
-    if not payload:
+    if user is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"}
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
         )
-    
-    # Get user from database
-    auth_service = AuthService(db)
-    user = auth_service.get_current_user(payload)
     
     return user
 
-
-def get_current_active_user(
-    current_user: User = Depends(get_current_user)
-) -> User:
-    """
-    Dependency to get current active user.
-    
-    Args:
-        current_user: Current user from token
-        
-    Returns:
-        Active user
-        
-    Raises:
-        HTTPException: If user is inactive
-    """
+def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+    """Get current active user"""
     if not current_user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Inactive user"
         )
-    return current_user
-
-
-def get_current_admin_user(
-    current_user: User = Depends(get_current_active_user)
-) -> User:
-    """
-    Dependency to get current admin user.
     
-    Args:
-        current_user: Current active user
-        
-    Returns:
-        Admin user
-        
-    Raises:
-        HTTPException: If user is not an admin
-    """
-    if current_user.role != UserRole.ADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough privileges"
-        )
-    return current_user
-
-
-def get_current_parking_manager(
-    current_user: User = Depends(get_current_active_user)
-) -> User:
-    """
-    Dependency to get current parking manager or admin user.
-    
-    Args:
-        current_user: Current active user
-        
-    Returns:
-        Parking manager or admin user
-        
-    Raises:
-        HTTPException: If user is not a parking manager or admin
-    """
-    if current_user.role not in [UserRole.ADMIN, UserRole.PARKING_MANAGER]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough privileges"
-        )
     return current_user
