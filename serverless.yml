@@ -1,4 +1,4 @@
-service: twilo-summary
+service: 'parking-management-api'
 
 frameworkVersion: "3"
 variablesResolutionMode: 20210326
@@ -23,9 +23,7 @@ provider:
       Action:
         - "s3:GetObject"
         - "s3:ListBucket"
-      # Resource:
-      #   - "arn:aws:s3:::${ssm:/${self:provider.stage}/openai/s3_bucket}"
-      #   - "arn:aws:s3:::${ssm:/${self:provider.stage}/openai/s3_bucket}/*"
+      Resource: "*"  # temporary, replace with your bucket ARN later
     - Effect: "Allow"
       Action:
         - "logs:CreateLogGroup"
@@ -36,6 +34,7 @@ provider:
       Action:
         - "lambda:InvokeFunction"
       Resource: "*"
+
 
 functions:
   api:
@@ -62,7 +61,7 @@ plugins:
 
 custom:
   pythonRequirements:
-    dockerizePip: true
+    dockerizePip: false
     slim: true
     zip: true  
     layer: true
@@ -70,8 +69,12 @@ custom:
   warmup:
     default:
       enabled: false
-      timeout: 10
-      memorySize: 128
+
+  # warmup:
+  #   default:
+  #     enabled: false
+  #     timeout: 10
+  #     memorySize: 128
 
   # customDomain:
   #   domainName: api${file(./env/${self:provider.stage}.json):API_PREFIX}.parkidam.com
