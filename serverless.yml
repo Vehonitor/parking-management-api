@@ -58,12 +58,22 @@ plugins:
   - serverless-offline
   - serverless-plugin-warmup
 
+# custom:
+#   pythonRequirements:
+#     dockerizePip: false
+#     slim: true
+#     zip: true  
+#     layer: true
 custom:
   pythonRequirements:
+    pythonBin: py
     dockerizePip: false
     slim: true
-    zip: true  
+    zip: true
     layer: true
+    useStaticCache: false
+    useDownloadCache: false
+    copy: true
 
   warmup:
     default:
