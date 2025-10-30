@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+boto3
+sqlalchemy
+alembic
+python-dotenv
+pydantic
+passlib[bcrypt]
+python-jose
+pytest
+pytest-asyncio
+httpx
+serverless-python-requirements
+serverless-offline
+serverless-domain-manager
+serverless-plugin-warmup
