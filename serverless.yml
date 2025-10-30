@@ -6,7 +6,7 @@ variablesResolutionMode: 20210326
 provider:
   name: aws
   runtime: python3.10
-  stage: ${opt:stage, 'pre-prod'}
+  stage: ${opt:stage, 'preprod'}
   region: us-east-1
   timeout: 30
   memorySize: 512
@@ -16,7 +16,7 @@ provider:
     # TWILIO_AUTH_TOKEN: ${ssm:/${self:provider.stage}/twilio/auth_token}
     # OPENAI_API_KEY: ${ssm:/${self:provider.stage}/openai/api_key}
     S3_BUCKET: "https://content-preprod-parkidem/"
-    STAGE: "pre-prod"
+    STAGE: "preprod"
 
   iamRoleStatements:
     - Effect: "Allow"
