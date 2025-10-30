@@ -55,13 +55,13 @@ jobs:
           nvm install 20
           nvm use 20
           npm install -g npm@10.8.2
-          npm install -g @angular/cli@latest
+          # npm install -g @angular/cli@latest
           npm install -g serverless@3.40.0
           echo "Node, Angular, and Serverless installed"
           node -v
           npm -v
           nvm --version
-          ng version || echo "ng not installed"
+          # ng version || echo "ng not installed"
           npm install --legacy-peer-deps
 
           case "${GITHUB_REF##*/}" in
