@@ -1,0 +1,57 @@
+service: parking-management-api
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.10
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+
+  environment:
+    # JWT
+    JWT_SECRET: ${ssm:/parking/${self:provider.stage}/JWT_SECRET}
+    JWT_ALGORITHM: HS256
+    ACCESS_TOKEN_EXPIRE_MINUTES: ${ssm:/parking/${self:provider.stage}/ACCESS_TOKEN_EXPIRE_MINUTES}
+
+    # Database
+    DATABASE_URL: ${ssm:/parking/${self:provider.stage}/DATABASE_URL}
+    DB_USER: ${ssm:/parking/${self:provider.stage}/DB_USER}
+    DB_PASSWORD: ${ssm:/parking/${self:provider.stage}/DB_PASSWORD}
+    DB_HOST: ${ssm:/parking/${self:provider.stage}/DB_HOST}
+    DB_PORT: ${ssm:/parking/${self:provider.stage}/DB_PORT}
+    DB_NAME: ${ssm:/parking/${self:provider.stage}/DB_NAME}
+
+    # Twilio
+    TWILIO_ACCOUNT_SID: ${ssm:/parking/${self:provider.stage}/TWILIO_ACCOUNT_SID}
+    TWILIO_AUTH_TOKEN: ${ssm:/parking/${self:provider.stage}/TWILIO_AUTH_TOKEN}
+    TWILIO_FROM_NUMBER: ${ssm:/parking/${self:provider.stage}/TWILIO_FROM_NUMBER}
+
+    # App configuration
+    DEBUG: true
+    STAGE: ${self:provider.stage}
+    OTP_EXPIRY_MINUTES: 10
+    OTP_LENGTH: 6
+    APP_NAME: Parking Management API
+
+package:
+  exclude:
+    - .gitignore
+    - .git/**
+    - tests/**
+    - __pycache__/**
+
+functions:
+  app:
+    handler: src.main.handler
+    events:
+      - httpApi: '*'
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+    layer: true
+    slim: true
