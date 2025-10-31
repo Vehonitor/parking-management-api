@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 # ============================================================================
 # STEP 9: Update src/repositories/user_repo.py
@@ -6,6 +7,11 @@ from sqlalchemy.orm import Session
 from src.api.v1.schemas.user import UserAdded
 from src.db.models.user import User
 from typing import Optional
+=======
+from sqlalchemy.orm import Session
+from src.db.models.user import User
+from src.schemas.user import UserCreate, UserUpdate
+>>>>>>> 1c47c5c (first commit)
 
 class UserRepository:
     def __init__(self, db: Session):

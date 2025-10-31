@@ -126,8 +126,12 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 
 ## License
 
+<<<<<<< HEAD
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 
 
 pip install twilio psycopg2-binary python-dotenv
+=======
+This project is licensed under the MIT License. See the LICENSE file for details.
+>>>>>>> 1c47c5c (first commit)

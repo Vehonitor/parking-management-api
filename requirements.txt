@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # FastAPI and related
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
@@ -44,3 +45,21 @@ twilio==8.10.0
 # Optional
 razorpay==1.4.1
 boto3==1.29.7
+=======
+fastapi
+uvicorn
+boto3
+sqlalchemy
+alembic
+python-dotenv
+pydantic
+passlib[bcrypt]
+python-jose
+pytest
+pytest-asyncio
+httpx
+serverless-python-requirements
+serverless-offline
+serverless-domain-manager
+serverless-plugin-warmup
+>>>>>>> 1c47c5c (first commit)

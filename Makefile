@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .PHONY: help install dev test clean deploy docker-build docker-run
 
 # Variables
@@ -102,3 +103,29 @@ ci-test: ## Run tests for CI
 
 ci-deploy: ## Deploy from CI
 	serverless deploy --stage $(STAGE) --verbose
+=======
+all: install run
+
+install:
+	pip install -r requirements.txt
+
+run:
+	uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+test:
+	pytest src/tests
+
+migrate:
+	alembic upgrade head
+
+docker-build:
+	docker build -t parking-management-api .
+
+docker-run:
+	docker run -p 8000:8000 parking-management-api
+
+deploy:
+	serverless deploy
+
+.PHONY: install run test migrate docker-build docker-run deploy
+>>>>>>> 1c47c5c (first commit)

@@ -30,4 +30,8 @@ def get_db():
     try:
         yield db
     finally:
+<<<<<<< HEAD
         db.close()
+=======
+        db.close()
+>>>>>>> 1c47c5c (first commit)

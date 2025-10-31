@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # src/db/base.py
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -33,3 +34,8 @@ __all__ = [
     "ParkingSpaceSchedule",
     "ChatMessage",
 ]
+=======
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+>>>>>>> 1c47c5c (first commit)

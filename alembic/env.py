@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # alembic/env.py
 
 from logging.config import fileConfig
@@ -33,6 +34,21 @@ target_metadata = Base.metadata
 # -------------------------------
 # Run migrations offline
 # -------------------------------
+=======
+from logging.config import fileConfig
+from sqlalchemy import engine_from_config
+from sqlalchemy import pool
+from alembic import context
+from src.db.base import Base
+from src.db.models import user, parking_spot  # Import your models here
+
+config = context.config
+
+fileConfig(config.config_file_name)
+
+target_metadata = Base.metadata
+
+>>>>>>> 1c47c5c (first commit)
 def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -45,6 +61,7 @@ def run_migrations_offline():
     with context.begin_transaction():
         context.run_migrations()
 
+<<<<<<< HEAD
 # -------------------------------
 # Run migrations online
 # -------------------------------
@@ -52,10 +69,17 @@ def run_migrations_online():
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
+=======
+def run_migrations_online():
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section),
+        prefix='sqlalchemy.',
+>>>>>>> 1c47c5c (first commit)
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
+<<<<<<< HEAD
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()
@@ -67,3 +91,18 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+=======
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True,
+        )
+
+        with context.begin_transaction():
+            context.run_migrations()
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
+>>>>>>> 1c47c5c (first commit)

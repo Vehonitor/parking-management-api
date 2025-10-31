@@ -1,20 +1,31 @@
+<<<<<<< HEAD
 
 name: Deploy Serverless Application
 
+=======
+name: Deploy to AWS Lambda
+>>>>>>> 1c47c5c (first commit)
 on:
   push:
     branches:
       - main
+<<<<<<< HEAD
       - pre-prod
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
+=======
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+>>>>>>> 1c47c5c (first commit)
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
+<<<<<<< HEAD
       - name: Check system versions
         run: |
           lsb_release -a
@@ -85,3 +96,22 @@ jobs:
           echo "PATH: $PATH"
           which npm || echo "npm not found"
           ls -l $(which npm) || echo "npm binary not found"
+=======
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Deploy to AWS Lambda
+        run: |
+          npx serverless deploy --stage prod
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+>>>>>>> 1c47c5c (first commit)

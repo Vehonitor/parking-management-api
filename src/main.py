@@ -21,6 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+<<<<<<< HEAD
 # Include routers
 # Include routers
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
@@ -57,3 +58,8 @@ async def root():
         "database": "PostgreSQL",
         "docs": "/docs"
     }
+=======
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(parking.router, prefix="/api/v1/parking", tags=["parking"])
+app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
+>>>>>>> 1c47c5c (first commit)

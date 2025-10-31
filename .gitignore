@@ -64,3 +64,4 @@ src/db/__pycache__
 src/repositories/__pycache__
 src/services/__pycache__
 src/utils/__pycache__
+src/api/v1/__init__.py
