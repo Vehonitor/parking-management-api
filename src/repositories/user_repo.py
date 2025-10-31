@@ -8,6 +8,8 @@ from src.db.models.user import User
 from typing import Optional
 
 class UserRepository:
+    """Repository for user database operations."""
+    
     def __init__(self, db: Session):
         self.db = db
 

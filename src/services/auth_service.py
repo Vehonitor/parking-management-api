@@ -21,6 +21,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 class AuthService:
+    """Service for authentication and authorization."""
+    
     def __init__(self, db: Session):
         self.db = db
         self.user_repo = UserRepository(db)

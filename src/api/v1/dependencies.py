@@ -4,6 +4,7 @@
 # STEP 13: Update src/api/v1/dependencies.py
 # ============================================================================
 from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from src.db.session import get_db
 from src.core.security import get_current_user_phone
