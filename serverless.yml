@@ -5,41 +5,46 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: python3.10
-  stage: ${opt:stage, 'dev'}
+  stage: ${opt:stage, 'preprod'}
   region: us-east-1
 
   environment:
     # JWT
-    JWT_SECRET: ${ssm:/parking/${self:provider.stage}/JWT_SECRET}
-    JWT_ALGORITHM: HS256
-    ACCESS_TOKEN_EXPIRE_MINUTES: ${ssm:/parking/${self:provider.stage}/ACCESS_TOKEN_EXPIRE_MINUTES}
+    JWT_SECRET: ${ssm:/parking/${self:provider.stage}/JWT_SECRET, 'supersecretkey123'}
+    JWT_ALGORITHM: ${ssm:/parking/${self:provider.stage}/JWT_ALGORITHM, 'HS256'}
+    ACCESS_TOKEN_EXPIRE_MINUTES: ${ssm:/parking/${self:provider.stage}/ACCESS_TOKEN_EXPIRE_MINUTES, 30}
 
     # Database
-    DATABASE_URL: ${ssm:/parking/${self:provider.stage}/DATABASE_URL}
-    DB_USER: ${ssm:/parking/${self:provider.stage}/DB_USER}
-    DB_PASSWORD: ${ssm:/parking/${self:provider.stage}/DB_PASSWORD}
-    DB_HOST: ${ssm:/parking/${self:provider.stage}/DB_HOST}
-    DB_PORT: ${ssm:/parking/${self:provider.stage}/DB_PORT}
-    DB_NAME: ${ssm:/parking/${self:provider.stage}/DB_NAME}
+    DATABASE_URL: ${ssm:/parking/${self:provider.stage}/DATABASE_URL, 'postgresql://user:pass@localhost:5432/postgres'}
+    DB_USER: ${ssm:/parking/${self:provider.stage}/DB_USER, 'parkidam_user'}
+    DB_PASSWORD: ${ssm:/parking/${self:provider.stage}/DB_PASSWORD, 'parkidam_pass'}
+    DB_HOST: ${ssm:/parking/${self:provider.stage}/DB_HOST, 'localhost'}
+    DB_PORT: ${ssm:/parking/${self:provider.stage}/DB_PORT, 5432}
+    DB_NAME: ${ssm:/parking/${self:provider.stage}/DB_NAME, 'postgres'}
 
     # Twilio
-    TWILIO_ACCOUNT_SID: ${ssm:/parking/${self:provider.stage}/TWILIO_ACCOUNT_SID}
-    TWILIO_AUTH_TOKEN: ${ssm:/parking/${self:provider.stage}/TWILIO_AUTH_TOKEN}
-    TWILIO_FROM_NUMBER: ${ssm:/parking/${self:provider.stage}/TWILIO_FROM_NUMBER}
+    TWILIO_ACCOUNT_SID: ${ssm:/parking/${self:provider.stage}/TWILIO_ACCOUNT_SID, 'default_sid'}
+    TWILIO_AUTH_TOKEN: ${ssm:/parking/${self:provider.stage}/TWILIO_AUTH_TOKEN, 'default_token'}
+    TWILIO_FROM_NUMBER: ${ssm:/parking/${self:provider.stage}/TWILIO_FROM_NUMBER, '+10000000000'}
 
     # App configuration
-    DEBUG: true
+    DEBUG: ${ssm:/parking/${self:provider.stage}/DEBUG, true}
     STAGE: ${self:provider.stage}
-    OTP_EXPIRY_MINUTES: 10
-    OTP_LENGTH: 6
-    APP_NAME: Parking Management API
+    OTP_EXPIRY_MINUTES: ${ssm:/parking/${self:provider.stage}/OTP_EXPIRY_MINUTES, 10}
+    OTP_LENGTH: ${ssm:/parking/${self:provider.stage}/OTP_LENGTH, 6}
+    APP_NAME: ${ssm:/parking/${self:provider.stage}/APP_NAME, 'Parking Management API'}
 
 package:
-  exclude:
-    - .gitignore
-    - .git/**
-    - tests/**
-    - __pycache__/**
+  patterns:
+    - '!venv/**'
+    - '!node_modules/**'
+    - '!__pycache__/**'
+    - '!tests/**'
+    - '!*.test.py'
+    - '**/*.py'
+    - 'services/**'
+    - 'utils/**'
+    - 'static/**'
 
 functions:
   app:
@@ -49,9 +54,17 @@ functions:
 
 plugins:
   - serverless-python-requirements
+  - serverless-offline
+  - serverless-plugin-warmup
 
 custom:
   pythonRequirements:
     dockerizePip: true
     layer: true
     slim: true
+
+  warmup:
+    default:
+      enabled: false
+      timeout: 10
+      memorySize: 128
