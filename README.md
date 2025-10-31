@@ -78,7 +78,11 @@ parking-management-api
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+  
    ```
+
+powershell
+.\venv\Scripts\Activate.ps1
 
 3. **Install dependencies:**
    ```bash
